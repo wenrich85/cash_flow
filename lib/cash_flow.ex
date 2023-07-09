@@ -4,6 +4,11 @@ defmodule CashFlow do
     accounts
   end
 
+  def get_state(accounts) do
+    :sys.get_state(accounts)
+  end
+
+
   def set_expense_threshold(accounts, amount) do
     GenServer.call(accounts, {:set_expense_threshold, amount})
   end
