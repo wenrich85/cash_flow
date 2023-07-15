@@ -27,12 +27,26 @@ defmodule CashFlow.Runtime.Server do
   end
 
   def handle_call({:simulate_month, revenue}, _from, accounts) do
-    new_accounts = Accounts.simulate_month(accounts, revenue, Enum.reduce(accounts.expenses, 0, fn x, acc -> x.amount + acc end))
+    new_accounts = Accounts.simulate_month(accounts, revenue)
     {:reply, new_accounts, new_accounts}
   end
 
   def handle_call(:calculate_expenses, _from, accounts) do
     {:reply, Expense.calculate_total_expenses(accounts.expenses), accounts}
+  end
+
+  def handle_call(:pay_expenses, _from, accounts) do
+    altered_accounts = Accounts.pay_expenses(accounts)
+    {:reply, altered_accounts, altered_accounts}
+  end
+
+  def handle_call(:pay_owner, _from, accounts) do
+    altered_accounts = Accounts.pay_owner(accounts)
+    {:reply, altered_accounts, altered_accounts}
+  end
+
+  def handle_call(:check_threshold, _from, accounts) do
+    {:reply, "checked", Accounts.check_thresholds(accounts)}
   end
 
 end

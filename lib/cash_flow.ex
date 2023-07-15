@@ -29,4 +29,16 @@ defmodule CashFlow do
   def calculate_expense(accounts) do
     GenServer.call(accounts, :calculate_expenses)
   end
+
+  def pay_expenses(accounts) do
+    GenServer.call(accounts, :pay_expenses)
+  end
+
+  def pay_owner(accounts) do
+    GenServer.call(accounts, :pay_owners)
+  end
+
+  def check_threshold(accounts) do
+    GenServer.call(accounts, :check_threshold)
+  end
 end

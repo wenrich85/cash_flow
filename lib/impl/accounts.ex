@@ -1,5 +1,5 @@
 defmodule CashFlow.Impl.Accounts do
-  defstruct ~w[operating_expense operating_threshold business_profit profit_threshold taxes owners_comp investment_holding owners_salary expenses]a
+  defstruct ~w[operating_expense operating_threshold business_profit profit_threshold taxes owners_comp investment_holding expenses]a
 
   def new do
     %__MODULE__{
@@ -9,7 +9,6 @@ defmodule CashFlow.Impl.Accounts do
       profit_threshold: 0,
       taxes: 0,
       owners_comp: 0,
-      owners_salary: 16000,
       investment_holding: 0,
       expenses: []
     }
@@ -24,14 +23,15 @@ defmodule CashFlow.Impl.Accounts do
     |> set_profit_threshold()
   end
 
-  def make_deposit(accounts, amount) do
-    struct!(accounts, %{operating_expense: accounts.operating_expense + amount})
+  def make_deposit(accounts, amount \\ 0) do
+    {sales_tax, deposit } = split_sales_taxes(amount)
+    struct!(accounts, %{operating_expense: accounts.operating_expense + deposit, taxes: accounts.taxes+ sales_tax})
   end
 
-  def simulate_month(accounts, revenue, expenses) do
+  def simulate_month(accounts, revenue) do
     make_deposit(accounts, revenue)
     |> pay_owners_taxes()
-    |> pay_expenses( expenses)
+    |> pay_expenses()
     |> check_threshold()
     |> check_profit_threshold()
 
@@ -41,8 +41,9 @@ defmodule CashFlow.Impl.Accounts do
     struct!(accounts, expenses: [expense | accounts.expenses ])
   end
 
-  defp pay_expenses(%{operating_expense: operating_expense}=accounts, expenses) when expenses < operating_expense do
-    struct!(accounts, %{operating_expense: accounts.operating_expense - expenses})
+  def pay_expenses(%{operating_expense: operating_expense, expenses: expenses}=accounts) when expenses < operating_expense do
+    expense_total = Enum.reduce(expenses, 0, fn x, acc -> x.amount + acc end)
+    struct!(accounts, %{operating_expense: accounts.operating_expense - expense_total})
   end
 
   defp pay_owners_taxes(accounts) do
@@ -51,8 +52,16 @@ defmodule CashFlow.Impl.Accounts do
     struct!(accounts, operating_expense: accounts.operating_expense - taxes_due, taxes: accounts.taxes + taxes_due)
   end
 
-  defp pay_owner(accounts) do
-    struct!(accounts, operating_expense: accounts.operating_expense - accounts.owners_salary, owners_comp: accounts.owners_comp + accounts.owners_salary)
+  def pay_owner(accounts) do
+    owners_salary = Enum.filter(accounts.expenses, fn exp -> exp.type == "Owner's Salary" end)
+    |> Enum.reduce(0, fn expense, acc -> acc + expense.amount end)
+    struct!(accounts, operating_expense: accounts.operating_expense - owners_salary, owners_comp: accounts.owners_comp + accounts.owners_salary)
+  end
+
+  def check_thresholds(accounts) do
+    accounts
+    |> check_threshold()
+    |> check_profit_threshold()
   end
 
   defp check_threshold(%{operating_expense: operating_expense, operating_threshold: threshold}=accounts) when operating_expense > threshold do
@@ -65,7 +74,7 @@ defmodule CashFlow.Impl.Accounts do
   end
 
   defp set_profit_threshold(%{} = accounts ) do
-    struct!(accounts, profit_threshold: accounts.operating_threshold * 6 )
+    struct!(accounts, profit_threshold: accounts.operating_threshold * 3 )
   end
 
   defp check_profit_threshold(%{business_profit: business_profit, profit_threshold: profit_threshold } = accounts) when business_profit > profit_threshold do
@@ -75,5 +84,10 @@ defmodule CashFlow.Impl.Accounts do
 
   defp check_profit_threshold(accounts) do
     accounts
+  end
+
+  defp split_sales_taxes(deposit) do
+    taxes = deposit * 0.06
+    {taxes, deposit-taxes}
   end
 end
