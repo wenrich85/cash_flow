@@ -41,7 +41,7 @@ defmodule CashFlow.Impl.Accounts do
     struct!(accounts, expenses: [expense | accounts.expenses ])
   end
 
-  def pay_expenses(%{operating_expense: operating_expense, expenses: expenses}=accounts) when expenses < operating_expense do
+  def pay_expenses(%{expenses: expenses}=accounts) do
     expense_total = Enum.reduce(expenses, 0, fn x, acc -> x.amount + acc end)
     struct!(accounts, %{operating_expense: accounts.operating_expense - expense_total})
   end
@@ -55,7 +55,7 @@ defmodule CashFlow.Impl.Accounts do
   def pay_owner(accounts) do
     owners_salary = Enum.filter(accounts.expenses, fn exp -> exp.type == "Owner's Salary" end)
     |> Enum.reduce(0, fn expense, acc -> acc + expense.amount end)
-    struct!(accounts, operating_expense: accounts.operating_expense - owners_salary, owners_comp: accounts.owners_comp + accounts.owners_salary)
+    struct!(accounts, operating_expense: accounts.operating_expense - owners_salary, owners_comp: accounts.owners_comp + owners_salary)
   end
 
   def check_thresholds(accounts) do
@@ -90,4 +90,6 @@ defmodule CashFlow.Impl.Accounts do
     taxes = deposit * 0.06
     {taxes, deposit-taxes}
   end
+
+
 end

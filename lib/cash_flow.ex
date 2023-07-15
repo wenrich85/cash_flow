@@ -31,11 +31,12 @@ defmodule CashFlow do
   end
 
   def pay_expenses(accounts) do
+    pay_owner(accounts)
     GenServer.call(accounts, :pay_expenses)
   end
 
   def pay_owner(accounts) do
-    GenServer.call(accounts, :pay_owners)
+    GenServer.call(accounts, :pay_owner)
   end
 
   def check_threshold(accounts) do
