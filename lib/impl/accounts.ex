@@ -64,7 +64,7 @@ defmodule CashFlow.Impl.Accounts do
     |> check_profit_threshold()
   end
 
-  defp check_threshold(%{operating_expense: operating_expense, operating_threshold: threshold}=accounts) when operating_expense > threshold do
+  defp check_threshold(%{operating_expense: operating_expense, operating_threshold: threshold}=accounts) when operating_expense > threshold and threshold > 0 do
     difference = operating_expense - threshold
     struct!(accounts, %{operating_expense: threshold, business_profit: accounts.business_profit + difference/2, taxes: accounts.taxes + difference/2})
   end
@@ -77,7 +77,7 @@ defmodule CashFlow.Impl.Accounts do
     struct!(accounts, profit_threshold: accounts.operating_threshold * 3 )
   end
 
-  defp check_profit_threshold(%{business_profit: business_profit, profit_threshold: profit_threshold } = accounts) when business_profit > profit_threshold do
+  defp check_profit_threshold(%{business_profit: business_profit, profit_threshold: profit_threshold } = accounts) when business_profit > profit_threshold and profit_threshold > 0 do
     difference = business_profit - profit_threshold
     struct!(accounts, %{business_profit: profit_threshold, investment_holding: accounts.investment_holding + difference})
   end
