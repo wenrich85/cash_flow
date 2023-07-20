@@ -74,7 +74,7 @@ defmodule CashFlow.Impl.Accounts do
   end
 
   defp set_profit_threshold(%{} = accounts ) do
-    struct!(accounts, profit_threshold: accounts.operating_threshold * 3 )
+    struct!(accounts, profit_threshold: accounts.operating_threshold * 6 )
   end
 
   defp check_profit_threshold(%{business_profit: business_profit, profit_threshold: profit_threshold } = accounts) when business_profit > profit_threshold and profit_threshold > 0 do
