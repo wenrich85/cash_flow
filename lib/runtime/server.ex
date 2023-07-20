@@ -36,6 +36,7 @@ defmodule CashFlow.Runtime.Server do
   end
 
   def handle_call(:pay_expenses, _from, accounts) do
+    IO.inspect(accounts.operating_expense, label: "Server")
     altered_accounts = Accounts.pay_expenses(accounts)
     {:reply, altered_accounts, altered_accounts}
   end

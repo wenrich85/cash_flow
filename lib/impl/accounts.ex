@@ -42,7 +42,10 @@ defmodule CashFlow.Impl.Accounts do
   end
 
   def pay_expenses(%{expenses: expenses}=accounts) do
-    expense_total = Enum.reduce(expenses, 0, fn x, acc -> x.amount + acc end)
+    expense_total =
+      expenses
+      |> Enum.filter(fn exp -> exp.type != "Owner's Salary" end)
+      |> Enum.reduce( 0, fn x, acc -> x.amount + acc end)
     struct!(accounts, %{operating_expense: accounts.operating_expense - expense_total})
   end
 
