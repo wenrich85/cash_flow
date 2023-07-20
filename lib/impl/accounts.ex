@@ -30,6 +30,7 @@ defmodule CashFlow.Impl.Accounts do
 
   def simulate_month(accounts, revenue) do
     make_deposit(accounts, revenue)
+    |> pay_owner()
     |> pay_owners_taxes()
     |> pay_expenses()
     |> check_threshold()
@@ -55,6 +56,16 @@ defmodule CashFlow.Impl.Accounts do
     struct!(accounts, operating_expense: accounts.operating_expense - taxes_due, taxes: accounts.taxes + taxes_due)
   end
 
+  @spec pay_owner(
+          atom
+          | %{
+              :__struct__ => atom,
+              :expenses => any,
+              :operating_expense => number,
+              :owners_comp => number,
+              optional(atom) => any
+            }
+        ) :: struct
   def pay_owner(accounts) do
     owners_salary = Enum.filter(accounts.expenses, fn exp -> exp.type == "Owner's Salary" end)
     |> Enum.reduce(0, fn expense, acc -> acc + expense.amount end)
