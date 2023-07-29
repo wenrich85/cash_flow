@@ -3,8 +3,8 @@ defmodule CashFlow.Runtime.Server do
   alias CashFlow.Impl.Accounts
   alias CashFlow.Impl.Expense
 
-  def start do
-    GenServer.start(__MODULE__, nil)
+  def start_link(name) do
+    GenServer.start(__MODULE__, nil, name: via_tuple(name))
   end
   def init(_) do
     {:ok, Accounts.new() }
@@ -49,5 +49,7 @@ defmodule CashFlow.Runtime.Server do
   def handle_call(:check_threshold, _from, accounts) do
     {:reply, "checked", Accounts.check_thresholds(accounts)}
   end
+
+  defp via_tuple(name), do: {:via, Registry, {CashflowRegistry, {__MODULE__, name}}}
 
 end

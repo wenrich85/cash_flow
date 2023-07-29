@@ -1,7 +1,10 @@
 defmodule CashFlow do
-  def new do
-    {:ok, accounts } = CashFlow.Runtime.Server.start()
-    accounts
+  def new(name)do
+    case CashFlow.Runtime.Server.start_link(name) do
+      {:ok, accounts } ->
+       accounts
+       {:error, {:already_started, accounts }} -> accounts
+      end
   end
 
   def get_state(accounts) do
